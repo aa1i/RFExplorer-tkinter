@@ -49,11 +49,11 @@ class App:
         self.get_ports()
         self.Port_combo.pack(side=LEFT)
 
+        Button(top_frame, text="Connect", command=self.init_port).pack(side=LEFT)
+        Button(top_frame, text="Disconnect", command=self.disconnect).pack(side=LEFT)
 
         Button(top_frame, text="RF OFF", fg="red", command=self.rf_off).pack(side=RIGHT)
         Button(top_frame, text="QUIT", fg="red", command=self.quit).pack(side=RIGHT)
-        Button(top_frame, text="Disconnect", command=self.disconnect).pack(side=RIGHT)
-        Button(top_frame, text="Connect", command=self.init_port).pack(side=RIGHT)
 
 
         # Mid frame
@@ -90,6 +90,34 @@ class App:
         self.Freq_step = StringVar()
         Label( siggen_cw_frame, textvariable=self.Freq_step).pack(anchor="w")
         self.Freq_step.set("F_step: unk")
+
+        frame = Frame( siggen_cw_frame )
+        lab = Label( frame, width=10, text="Freq (MHz): ", anchor='w')
+        self.Freq_CW_ent = Entry(frame)
+        self.Freq_CW_ent.insert(0,"0")
+        frame.pack(side=TOP, fill=X, padx=5, pady=5)
+        lab.pack(side=LEFT)
+        self.Freq_CW_ent.pack(side=RIGHT, expand=YES, fill=X)
+        
+        frame = Frame( siggen_cw_frame )
+        Button( frame, text="-", command=self.set_cw_freq_down).pack(side=LEFT)
+        Button( frame, text="Set", command=self.set_cw_freq).pack(side=LEFT)
+        Button( frame, text="+", command=self.set_cw_freq_up).pack(side=RIGHT)
+        frame.pack(side=TOP)
+
+        frame = Frame( siggen_cw_frame )
+        lab = Label( frame, width=10, text="Step (MHz): ", anchor='w')
+        self.Freq_Step_ent = Entry(frame)
+        self.Freq_Step_ent.insert(0,"0")
+        frame.pack(side=TOP, fill=X, padx=5, pady=5)
+        lab.pack(side=LEFT)
+        Button( frame, text="Set", command=self.set_freq_step).pack(side=RIGHT)
+        self.Freq_Step_ent.pack(side=RIGHT, expand=YES, fill=X)
+
+        frame = Frame( siggen_cw_frame )
+        Button( frame, text="RF on", command=self.set_cw_rf_on).pack(side=LEFT)
+        Button( frame, text="RF OFF", fg="red", command=self.rf_off).pack(side=RIGHT)
+        frame.pack(side=TOP)
 
         # freq sweep
         
@@ -278,7 +306,36 @@ class App:
     def rf_off( self ):
         self.objRFE.SendCommand_GeneratorRFPowerOFF()
 
-        
+    def set_cw_freq( self ):
+        cw_freq = float( self.Freq_CW_ent.get() )
+        print( cw_freq )
+        self.objRFE.RFGenCWFrequencyMHZ = cw_freq
+        if 1 == self.objRFE.RFGenPowerON and self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_CW:
+            self.objRFE.SendCommand_GeneratorCW()
+
+    def set_freq_step( self ):
+        freq_step = float( self.Freq_Step_ent.get() )
+        print( freq_step )
+        self.objRFE.RFGenStepFrequencyMHZ = freq_step
+
+    def set_cw_rf_on( self ):
+        self.objRFE.SendCommand_GeneratorCW()
+
+    def set_cw_freq_up( self ):
+        freq = self.objRFE.RFGenCWFrequencyMHZ + self.objRFE.RFGenStepFrequencyMHZ
+        print( freq )
+        self.objRFE.RFGenCWFrequencyMHZ = float(freq)
+        if 1 == self.objRFE.RFGenPowerON and self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_CW:
+            self.objRFE.SendCommand_GeneratorCW()
+
+    def set_cw_freq_down( self ):
+        freq = self.objRFE.RFGenCWFrequencyMHZ - self.objRFE.RFGenStepFrequencyMHZ
+        print( freq )
+        self.objRFE.RFGenCWFrequencyMHZ = float(freq)
+        if 1 == self.objRFE.RFGenPowerON and self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_CW :
+            self.objRFE.SendCommand_GeneratorCW()
+
+
 def main(argv):
     root = Tk()
     root.wm_title("RF Explorer")
