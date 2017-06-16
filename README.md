@@ -1,7 +1,7 @@
 # RFExplorer-tkinter
 Python/tkinter GUI to control RF Explorer / Signal Generator
 
-Currently only displays status on for a Signal Generator model, I'll add functionality as free time permits.
+Currently only displays status on a Signal Generator model, I'll more add functionality as my free time permits.
 
 ## Requires:
 
@@ -10,6 +10,7 @@ Currently only displays status on for a Signal Generator model, I'll add functio
 on Debian/Ububtu:
 
 sudo apt-get install python3-pip
+
 sudo pip3 install RFExplorer
 
 also installs PySerial
