@@ -1,4 +1,5 @@
 import RFExplorer
+from RFExplorer.RFE6GEN_CalibrationData import RFE6GEN_CalibrationData
 
 #from Tkinter import *
 #import ttk
@@ -254,10 +255,9 @@ class App:
         else:
             self.RF_enable.set("RF: off")
 
-        power_high_switch = self.objRFE.RFGenHighPowerSwitch
-        power_level       = self.objRFE.RFGenPowerLevel
-        self.RF_power.set( "Power: {0:d} {1:d}" .format(
-            power_high_switch, power_level ) )
+        cw_freq = self.objRFE.RFGenCWFrequencyMHZ
+        power_dbm = self.objRFE.GetSignalGeneratorEstimatedAmplitude(cw_freq )
+        self.RF_power.set( "Power: {0:5.1f} dBm" .format( power_dbm ) )
 
         # CW parameters
         self.Freq_cw.set  ( "F_out:   {:09,} Hz"   .format( self.objRFE.RFGenCWFrequencyMHZ    * 1000000 ) )
