@@ -32,3 +32,7 @@ to run:
 python3 RFsiggen-tk.py
 
 (name may change in the future as I add functionality around the RF explorer spectrum analyzer models)
+
+## Known Issues
+
+[ ]  The reported power levels in dBm are close, but not equal to the values displayed on the RFE6GEN
