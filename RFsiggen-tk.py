@@ -117,6 +117,8 @@ class App:
 
         frame = Frame( siggen_cw_frame )
         Button( frame, text="RF on", command=self.set_cw_rf_on).pack(side=LEFT)
+        Button( frame, text="Power -", command=self.rf_power_decrement).pack(side=LEFT)
+        Button( frame, text="Power +", command=self.rf_power_increment).pack(side=LEFT)
         Button( frame, text="RF OFF", fg="red", command=self.rf_off).pack(side=RIGHT)
         frame.pack(side=TOP)
 
@@ -260,25 +262,25 @@ class App:
         self.RF_power.set( "Power: {0:5.1f} dBm" .format( power_dbm ) )
 
         # CW parameters
-        self.Freq_cw.set  ( "F_out:   {:09,} Hz"   .format( self.objRFE.RFGenCWFrequencyMHZ    * 1000000 ) )
-        self.Freq_step.set( "F_step:  {:09,} Hz"   .format( self.objRFE.RFGenStepFrequencyMHZ  * 1000000 ) )
+        self.Freq_cw.set  ( "F_out:   {:09,.0f} Hz"   .format( self.objRFE.RFGenCWFrequencyMHZ    * 1000000 ) )
+        self.Freq_step.set( "F_step:  {:09,.0f} Hz"   .format( self.objRFE.RFGenStepFrequencyMHZ  * 1000000 ) )
 
         # Freq sweep parameters
-        self.Freq_start.set( "F_start: {:09,} Hz"   .format( self.objRFE.RFGenStartFrequencyMHZ * 1000000 ) )
-        self.Freq_stop.set ( "F_stop:  {:09,} Hz"   .format( self.objRFE.RFGenStopFrequencyMHZ  * 1000000 ) )
+        self.Freq_start.set( "F_start: {:09,.0f} Hz"   .format( self.objRFE.RFGenStartFrequencyMHZ * 1000000 ) )
+        self.Freq_stop.set ( "F_stop:  {:09,.0f} Hz"   .format( self.objRFE.RFGenStopFrequencyMHZ  * 1000000 ) )
         #self.Freq_step.set ( "F_step:  {:09,} Hz"   .format( self.objRFE.RFGenStepFrequencyMHZ  * 1000000 ) )
         self.Num_steps.set ( "Num steps: {0:d}"     .format( self.objRFE.RFGenSweepSteps                  ) )
-        self.Step_delay.set( "Step delay: {:04,} ms".format( self.objRFE.RFGenStepWaitMS                  ) )
+        self.Step_delay.set( "Step delay: {:04,d} ms".format( self.objRFE.RFGenStepWaitMS                  ) )
 
         # Ampl sweep parameters
         power_start_high_switch = self.objRFE.RFGenStartHighPowerSwitch
         power_start_level       = self.objRFE.RFGenStartPowerLevel
         power_stop_high_switch  = self.objRFE.RFGenStopHighPowerSwitch
         power_stop_level        = self.objRFE.RFGenStopPowerLevel
-        #self.Freq_cw.set  ( "F_out:   {:09,} Hz"   .format( self.objRFE.RFGenCWFrequencyMHZ    * 1000000 ) )
+        #self.Freq_cw.set  ( "F_out:   {:09.0,f} Hz"   .format( self.objRFE.RFGenCWFrequencyMHZ    * 1000000 ) )
         self.Power_start.set( "Power (start): {0:d} {1:d}" .format( power_start_high_switch, power_start_level ) )
         self.Power_stop.set ( "Power (stop) : {0:d} {1:d}" .format( power_stop_high_switch,  power_stop_level  ) )
-       #self.Step_delay.set( "Step delay: {:04,} ms".format( self.objRFE.RFGenStepWaitMS                  ) )
+       #self.Step_delay.set( "Step delay: {:04,d} ms".format( self.objRFE.RFGenStepWaitMS                  ) )
 
     def disconnect(self):
         self.rf_off()
@@ -308,7 +310,7 @@ class App:
 
     def set_cw_freq( self ):
         cw_freq = float( self.Freq_CW_ent.get() )
-        print( cw_freq )
+        #print( cw_freq )
         self.objRFE.RFGenCWFrequencyMHZ = cw_freq
         if 1 == self.objRFE.RFGenPowerON and self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_CW:
             self.objRFE.SendCommand_GeneratorCW()
@@ -323,16 +325,48 @@ class App:
 
     def set_cw_freq_up( self ):
         freq = self.objRFE.RFGenCWFrequencyMHZ + self.objRFE.RFGenStepFrequencyMHZ
-        print( freq )
+        #print( freq )
         self.objRFE.RFGenCWFrequencyMHZ = float(freq)
         if 1 == self.objRFE.RFGenPowerON and self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_CW:
             self.objRFE.SendCommand_GeneratorCW()
 
     def set_cw_freq_down( self ):
         freq = self.objRFE.RFGenCWFrequencyMHZ - self.objRFE.RFGenStepFrequencyMHZ
-        print( freq )
+        #print( freq )
         self.objRFE.RFGenCWFrequencyMHZ = float(freq)
         if 1 == self.objRFE.RFGenPowerON and self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_CW :
+            self.objRFE.SendCommand_GeneratorCW()
+
+    def rf_power_increment( self ):
+        power_high_switch = self.objRFE.RFGenHighPowerSwitch
+        power_level       = self.objRFE.RFGenPowerLevel
+        power_level += 1
+        # look for wrap from 0,3 to 1,0
+        if power_level > 3:
+            if power_high_switch == 0:
+                power_high_switch = 1
+                power_level = 0
+            else:
+                power_level = 3
+        self.objRFE.RFGenHighPowerSwitch = power_high_switch
+        self.objRFE.RFGenPowerLevel      = power_level
+        if 1 == self.objRFE.RFGenPowerON and self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_CW:
+            self.objRFE.SendCommand_GeneratorCW()
+
+    def rf_power_decrement( self ):
+        power_high_switch = self.objRFE.RFGenHighPowerSwitch
+        power_level       = self.objRFE.RFGenPowerLevel
+        power_level -= 1
+        # look for wrap from 1,0 to 0,3
+        if power_level < 0:
+            if power_high_switch == 1:
+                power_high_switch = 0
+                power_level = 3
+            else:
+                power_level = 0
+        self.objRFE.RFGenHighPowerSwitch = power_high_switch
+        self.objRFE.RFGenPowerLevel      = power_level
+        if 1 == self.objRFE.RFGenPowerON and self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_CW:
             self.objRFE.SendCommand_GeneratorCW()
 
 
