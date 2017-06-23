@@ -262,12 +262,12 @@ class App:
         self.RF_power.set( "Power: {0:5.1f} dBm" .format( power_dbm ) )
 
         # CW parameters
-        self.Freq_cw.set  ( "F_out:   {:09,.0f} Hz"   .format( self.objRFE.RFGenCWFrequencyMHZ    * 1000000 ) )
-        self.Freq_step.set( "F_step:  {:09,.0f} Hz"   .format( self.objRFE.RFGenStepFrequencyMHZ  * 1000000 ) )
+        self.Freq_cw.set  ( "F_out:   {:011,.0f} Hz"   .format( self.objRFE.RFGenCWFrequencyMHZ    * 1000000 ) )
+        self.Freq_step.set( "F_step:  {:011,.0f} Hz"   .format( self.objRFE.RFGenStepFrequencyMHZ  * 1000000 ) )
 
         # Freq sweep parameters
-        self.Freq_start.set( "F_start: {:09,.0f} Hz"   .format( self.objRFE.RFGenStartFrequencyMHZ * 1000000 ) )
-        self.Freq_stop.set ( "F_stop:  {:09,.0f} Hz"   .format( self.objRFE.RFGenStopFrequencyMHZ  * 1000000 ) )
+        self.Freq_start.set( "F_start: {:011,.0f} Hz"   .format( self.objRFE.RFGenStartFrequencyMHZ * 1000000 ) )
+        self.Freq_stop.set ( "F_stop:  {:011,.0f} Hz"   .format( self.objRFE.RFGenStopFrequencyMHZ  * 1000000 ) )
         #self.Freq_step.set ( "F_step:  {:09,} Hz"   .format( self.objRFE.RFGenStepFrequencyMHZ  * 1000000 ) )
         self.Num_steps.set ( "Num steps: {0:d}"     .format( self.objRFE.RFGenSweepSteps                  ) )
         self.Step_delay.set( "Step delay: {:04,d} ms".format( self.objRFE.RFGenStepWaitMS                  ) )
