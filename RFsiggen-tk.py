@@ -94,7 +94,7 @@ class App:
 
         frame = Frame( siggen_cw_frame )
         lab = Label( frame, width=10, text="Freq (MHz): ", anchor='w')
-        self.Freq_CW_ent = Entry(frame)
+        self.Freq_CW_ent = Entry( frame, width=12 )
         self.Freq_CW_ent.insert(0,"0")
         frame.pack(side=TOP, fill=X, padx=5, pady=5)
         lab.pack(side=LEFT)
@@ -108,7 +108,7 @@ class App:
 
         frame = Frame( siggen_cw_frame )
         lab = Label( frame, width=10, text="Step (MHz): ", anchor='w')
-        self.Freq_Step_ent = Entry(frame)
+        self.Freq_Step_ent = Entry( frame, width=12 )
         self.Freq_Step_ent.insert(0,"0")
         frame.pack(side=TOP, fill=X, padx=5, pady=5)
         lab.pack(side=LEFT)
@@ -146,6 +146,77 @@ class App:
         self.Step_delay = StringVar()
         Label( siggen_fsweep_frame, textvariable=self.Step_delay).pack(anchor="w")
         self.Step_delay.set("Step delay: unk (ms)")
+
+        # freq mix/max
+        frame = Frame( siggen_fsweep_frame )
+        lab = Label( frame, width=12, text="Fmin (MHz): ", anchor='w')
+        lab.pack(side=LEFT)
+        self.Freq_Sweep_Start_ent = Entry( frame, width=12 )
+        self.Freq_Sweep_Start_ent.insert(0,"0")
+        self.Freq_Sweep_Start_ent.pack(side=LEFT)
+
+        lab = Label( frame, width=12, text="Fmax (MHz): ", anchor='w')
+        lab.pack(side=LEFT)
+        self.Freq_Sweep_Stop_ent = Entry( frame, width=12)
+        self.Freq_Sweep_Stop_ent.insert(0,"0")
+        self.Freq_Sweep_Stop_ent.pack(side=LEFT)
+
+        Button( frame, text="Apply", command=self.set_freq_sweep_minmax).pack(side=RIGHT)
+        frame.pack(side=TOP, fill=X, padx=5, pady=5)
+
+        # freq center/span
+        frame = Frame( siggen_fsweep_frame )
+        lab = Label( frame, width=12, text="Fcenter (MHz): ", anchor='w')
+        lab.pack(side=LEFT)
+        self.Freq_Sweep_Center_ent = Entry( frame, width=12 )
+        self.Freq_Sweep_Center_ent.insert(0,"0")
+        self.Freq_Sweep_Center_ent.pack(side=LEFT)
+
+        lab = Label( frame, width=12, text="Fspan (MHz): ", anchor='w')
+        lab.pack(side=LEFT)
+        self.Freq_Sweep_Span_ent = Entry( frame, width=12 )
+        self.Freq_Sweep_Span_ent.insert(0,"0")
+        self.Freq_Sweep_Span_ent.pack(side=LEFT)
+
+        Button( frame, text="Apply", command=self.set_freq_sweep_centerspan).pack(side=RIGHT)
+        frame.pack(side=TOP, fill=X, padx=5, pady=5)
+
+        # Add number of steps / step size
+        frame = Frame( siggen_fsweep_frame )
+        lab = Label( frame, width=12, text="Fstep (MHz): ", anchor='w')
+        lab.pack(side=LEFT)
+        self.Freq_Sweep_Step_ent = Entry( frame, width=12 )
+        self.Freq_Sweep_Step_ent.insert(0,"0")
+        self.Freq_Sweep_Step_ent.pack(side=LEFT)
+
+        lab = Label( frame, width=12, text="Num Steps: ", anchor='w')
+        lab.pack(side=LEFT)
+        self.Freq_Sweep_NumSteps_ent = Entry( frame, width=12 )
+        self.Freq_Sweep_NumSteps_ent.insert(0,"0")
+        self.Freq_Sweep_NumSteps_ent.pack(side=LEFT)
+
+        Button( frame, text="Apply", command=self.set_freq_sweep_adjsteps).pack(side=RIGHT)
+        frame.pack(side=TOP, fill=X, padx=5, pady=5)
+
+        # step delay
+        frame = Frame( siggen_fsweep_frame )
+        lab = Label( frame, width=15, text="Step delay (msec): ", anchor='w')
+        lab.pack(side=LEFT)
+        self.Freq_Sweep_Delay_ent = Entry( frame, width=12 )
+        self.Freq_Sweep_Delay_ent.insert(0,"0")
+        self.Freq_Sweep_Delay_ent.pack(side=LEFT)
+
+        Button( frame, text="Apply", command=self.set_step_delay).pack(side=RIGHT)
+        frame.pack(side=TOP, fill=X, padx=5, pady=5)
+
+        # freq sweep on/off/power
+        frame = Frame( siggen_fsweep_frame )
+        Button( frame, text="RF on", command=self.set_freq_sweep_rf_on).pack(side=LEFT)
+        Button( frame, text="Power -", command=self.rf_power_decrement).pack(side=LEFT)
+        Button( frame, text="Power +", command=self.rf_power_increment).pack(side=LEFT)
+        Button( frame, text="RF OFF", fg="red", command=self.rf_off).pack(side=RIGHT)
+        frame.pack(side=TOP)
+
 
         # amplitude sweep
         
@@ -257,7 +328,10 @@ class App:
         else:
             self.RF_enable.set("RF: off")
 
-        cw_freq = self.objRFE.RFGenCWFrequencyMHZ
+        if self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_SWEEP_FREQ:
+            cw_freq = self.objRFE.RFGenStartFrequencyMHZ
+        else:
+            cw_freq = self.objRFE.RFGenCWFrequencyMHZ
         power_dbm = self.objRFE.GetSignalGeneratorEstimatedAmplitude(cw_freq )
         self.RF_power.set( "Power: {0:5.1f} dBm" .format( power_dbm ) )
 
@@ -280,7 +354,7 @@ class App:
         #self.Freq_cw.set  ( "F_out:   {:09.0,f} Hz"   .format( self.objRFE.RFGenCWFrequencyMHZ    * 1000000 ) )
         self.Power_start.set( "Power (start): {0:d} {1:d}" .format( power_start_high_switch, power_start_level ) )
         self.Power_stop.set ( "Power (stop) : {0:d} {1:d}" .format( power_stop_high_switch,  power_stop_level  ) )
-       #self.Step_delay.set( "Step delay: {:04,d} ms".format( self.objRFE.RFGenStepWaitMS                  ) )
+        #self.Step_delay.set( "Step delay: {:04,d} ms".format( self.objRFE.RFGenStepWaitMS                  ) )
 
     def disconnect(self):
         self.rf_off()
@@ -350,8 +424,11 @@ class App:
                 power_level = 3
         self.objRFE.RFGenHighPowerSwitch = power_high_switch
         self.objRFE.RFGenPowerLevel      = power_level
-        if 1 == self.objRFE.RFGenPowerON and self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_CW:
-            self.objRFE.SendCommand_GeneratorCW()
+        if 1 == self.objRFE.RFGenPowerON:
+            if self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_CW:
+                self.objRFE.SendCommand_GeneratorCW()
+            elif self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_SWEEP_FREQ:
+                self.objRFE.SendCommand_GeneratorSweepFreq( False )
 
     def rf_power_decrement( self ):
         power_high_switch = self.objRFE.RFGenHighPowerSwitch
@@ -366,8 +443,79 @@ class App:
                 power_level = 0
         self.objRFE.RFGenHighPowerSwitch = power_high_switch
         self.objRFE.RFGenPowerLevel      = power_level
-        if 1 == self.objRFE.RFGenPowerON and self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_CW:
-            self.objRFE.SendCommand_GeneratorCW()
+        if 1 == self.objRFE.RFGenPowerON:
+            if self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_CW:
+                self.objRFE.SendCommand_GeneratorCW()
+            elif self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_SWEEP_FREQ:
+                self.objRFE.SendCommand_GeneratorSweepFreq( False )
+
+    def set_freq_sweep_minmax( self ):
+        freq_start = float( self.Freq_Sweep_Start_ent.get() )
+        freq_stop  = float( self.Freq_Sweep_Stop_ent.get() )
+        self.objRFE.RFGenStartFrequencyMHZ = freq_start
+        self.objRFE.RFGenStopFrequencyMHZ  = freq_stop
+        # update center/span
+        freq_center = (freq_start + freq_stop ) / 2.0
+        freq_span   = (freq_stop  - freq_start )
+        self.Freq_Sweep_Center_ent.delete( 0, END )
+        self.Freq_Sweep_Center_ent.insert( 0, "{:.3f}".format(freq_center) )
+        self.Freq_Sweep_Span_ent.delete( 0, END )
+        self.Freq_Sweep_Span_ent.insert( 0, "{:.3f}".format(freq_span) )
+        # if RFon, apply settings
+        if 1 == self.objRFE.RFGenPowerON and self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_SWEEP_FREQ :
+            self.objRFE.SendCommand_GeneratorSweepFreq( False )
+
+    def set_freq_sweep_centerspan( self ):
+        freq_center = float( self.Freq_Sweep_Center_ent.get() )
+        freq_span   = float( self.Freq_Sweep_Span_ent.get() )
+        # update start/stop
+        freq_start = freq_center - (freq_span / 2.0)
+        freq_stop  = freq_center + (freq_span / 2.0)
+        self.objRFE.RFGenStartFrequencyMHZ = freq_start
+        self.objRFE.RFGenStopFrequencyMHZ  = freq_stop
+        self.Freq_Sweep_Start_ent.delete( 0, END )
+        self.Freq_Sweep_Start_ent.insert( 0, "{:.3f}".format(freq_start) )
+        self.Freq_Sweep_Stop_ent.delete( 0, END )
+        self.Freq_Sweep_Stop_ent.insert( 0, "{:.3f}".format(freq_stop) )
+        # if RFon, apply settings
+        if 1 == self.objRFE.RFGenPowerON and self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_SWEEP_FREQ :
+            self.objRFE.SendCommand_GeneratorSweepFreq( False )
+
+    def set_freq_sweep_adjsteps( self ):
+        freq_step      = float( self.Freq_Sweep_Step_ent.get() )
+        freq_num_steps =   int( self.Freq_Sweep_NumSteps_ent.get() )
+        self.objRFE.RFGenSweepSteps       = freq_num_steps
+        self.objRFE.RFGenStepFrequencyMHZ = freq_step
+        # update start/stop
+        freq_start = self.objRFE.RFGenStartFrequencyMHZ
+        freq_stop  = freq_start + freq_step * freq_num_steps
+        self.objRFE.RFGenStartFrequencyMHZ = freq_start
+        self.objRFE.RFGenStopFrequencyMHZ  = freq_stop
+        self.Freq_Sweep_Start_ent.delete( 0, END )
+        self.Freq_Sweep_Start_ent.insert( 0, "{:.3f}".format(freq_start) )
+        self.Freq_Sweep_Stop_ent.delete( 0, END )
+        self.Freq_Sweep_Stop_ent.insert( 0, "{:.3f}".format(freq_stop) )
+        # update center/span
+        freq_center = (freq_start + freq_stop ) / 2.0
+        freq_span   = (freq_stop  - freq_start )
+        self.Freq_Sweep_Center_ent.delete( 0, END )
+        self.Freq_Sweep_Center_ent.insert( 0, "{:.3f}".format(freq_center) )
+        self.Freq_Sweep_Span_ent.delete( 0, END )
+        self.Freq_Sweep_Span_ent.insert( 0, "{:.3f}".format(freq_span) )
+        # if RFon, apply settings
+        if 1 == self.objRFE.RFGenPowerON and self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_SWEEP_FREQ :
+            self.objRFE.SendCommand_GeneratorSweepFreq( False )
+
+    def set_step_delay( self ):
+        step_delay = int( self.Freq_Sweep_Delay_ent.get() )
+        self.objRFE.RFGenStepWaitMS = step_delay
+        # if RFon, apply settings
+        if 1 == self.objRFE.RFGenPowerON and self.mode == RFExplorer.RFE_Common.eMode.MODE_GEN_SWEEP_FREQ :
+            self.objRFE.SendCommand_GeneratorSweepFreq( False )
+
+    def set_freq_sweep_rf_on( self ):
+        self.objRFE.SendCommand_GeneratorSweepFreq( False )
+
 
 
 def main(argv):
