@@ -1,7 +1,7 @@
 # RFExplorer-tkinter
 Python/tkinter GUI to control RF Explorer / Signal Generator
 
-Currently only displays status on a Signal Generator model, I'll more add functionality as my free time permits.
+Currently only allow basic CW control on a Signal Generator model, I'll more add functionality as my free time permits.
 
 ## Requires:
 
